@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hejing Yuan — Content, Events & Design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal:#0E3B36;--teal2:#14524A;--ember:#E8743B;--paper:#F4F1E9;--ink:#1C2421;
+    --grey:#5E6863;--line:#E0DCCF;--card:#FBFAF4;--sage:#7C8A7F;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Inter',-apple-system,sans-serif;background:var(--paper);color:var(--ink);line-height:1.6;}
+  img{display:block;}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 30px;}
+  .imgbox{position:relative;overflow:hidden;background:var(--card);}
+  .imgbox img{width:100%;height:100%;object-fit:cover;}
+
+  /* ===== EDIT TOOLBAR ===== */
+  .toolbar{position:fixed;top:0;left:0;right:0;z-index:1000;background:var(--teal);color:var(--paper);
+    display:flex;align-items:center;gap:12px;padding:10px 20px;font-size:13px;box-shadow:0 2px 14px rgba(0,0,0,.15);}
+  .toolbar .brand{font-family:'Archivo',sans-serif;font-weight:900;font-size:14px;}
+  .toolbar .hint{color:#A9B5AE;font-size:12px;flex:1;}
+  .toolbar button{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;border:none;border-radius:7px;
+    padding:8px 13px;cursor:pointer;transition:transform .08s;}
+  .toolbar button:active{transform:scale(.96);}
+  .btn-edit{background:var(--ember);color:#fff;}
+  .btn-edit.on{background:var(--paper);color:var(--teal);}
+  .btn-ghost{background:rgba(255,255,255,.13);color:#fff;}
+  @media(max-width:680px){.toolbar .hint{display:none;}}
+
+  body.editing [data-edit]{outline:1px dashed rgba(232,116,59,.5);outline-offset:3px;border-radius:3px;cursor:text;}
+  body.editing [data-edit]:hover{outline:1px dashed var(--ember);background:rgba(232,116,59,.05);}
+  body.editing [data-edit]:focus{outline:2px solid var(--ember);background:#fff;}
+
+  /* ===== NAV ===== */
+  .nav{position:fixed;top:42px;left:0;right:0;z-index:90;background:rgba(14,59,54,.93);backdrop-filter:blur(8px);
+    display:flex;align-items:center;justify-content:space-between;padding:13px 30px;}
+  .nav .brand{font-family:'Archivo',sans-serif;font-weight:900;font-size:15px;color:var(--paper);letter-spacing:-.01em;}
+  .nav .brand .o{color:var(--ember);}
+  .nav .links{display:flex;gap:22px;}
+  .nav .links a{color:#C7D2CC;font-size:13px;font-weight:500;text-decoration:none;transition:color .15s;}
+  .nav .links a:hover{color:#fff;}
+  @media(max-width:680px){.nav .links{display:none;}}
+
+  .pad{height:42px;}
+
+  /* ===== HERO ===== */
+  .hero{background:var(--teal);color:var(--paper);padding:104px 0 64px;}
+  .hero .grid{display:grid;grid-template-columns:1.35fr 1fr;gap:54px;align-items:center;}
+  .hero .name{font-family:'Archivo',sans-serif;font-weight:900;font-size:60px;line-height:.95;letter-spacing:-.03em;margin-bottom:10px;}
+  .hero .name .o{color:var(--ember);}
+  .hero .role{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--ember);margin-bottom:26px;}
+  .hero p{font-size:16.5px;line-height:1.7;color:#DCE4DE;margin-bottom:14px;}
+  .hero p b{color:#fff;font-weight:600;}
+  .hero .portrait{border-radius:14px;overflow:hidden;aspect-ratio:3/4;box-shadow:0 20px 50px rgba(0,0,0,.3);}
+  .hero .stats{display:flex;gap:30px;margin-top:30px;flex-wrap:wrap;border-top:1px solid #2A4640;padding-top:24px;}
+  .hero .stats .n{font-family:'Archivo',sans-serif;font-weight:900;font-size:28px;color:#fff;line-height:1;}
+  .hero .stats .n .o{color:var(--ember);}
+  .hero .stats .l{font-size:11.5px;color:#A9B5AE;text-transform:uppercase;letter-spacing:.07em;margin-top:6px;max-width:130px;}
+
+  section.block{padding:68px 0;border-bottom:1px solid var(--line);}
+  .kick{font-family:'Inter',sans-serif;font-weight:700;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--ember);margin-bottom:10px;}
+  .secttl{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacing:-.02em;line-height:1.04;margin-bottom:14px;}
+  .lede{font-size:16.5px;color:var(--grey);max-width:680px;margin-bottom:34px;}
+  .lede b{color:var(--ink);}
+
+  /* case */
+  .case{display:grid;grid-template-columns:1fr 1fr;gap:38px;align-items:center;margin-bottom:46px;}
+  .case:last-child{margin-bottom:0;}
+  .case.flip .vis{order:2;}
+  .case .vis{border-radius:12px;overflow:hidden;aspect-ratio:4/3;}
+  .projname{font-family:'Archivo',sans-serif;font-weight:900;font-size:28px;letter-spacing:-.02em;line-height:1.08;margin-bottom:8px;}
+  .projattr{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ember);margin-bottom:18px;}
+  .case p{font-size:15.5px;color:var(--grey);line-height:1.62;margin-bottom:13px;}
+  .case p b{color:var(--ink);font-weight:600;}
+  .res{display:flex;gap:28px;margin-top:16px;}
+  .res .n{font-family:'Archivo',sans-serif;font-weight:900;font-size:24px;color:var(--teal);line-height:1;}
+  .res .l{font-size:12px;color:var(--grey);text-transform:uppercase;letter-spacing:.06em;margin-top:6px;max-width:140px;}
+  .tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:18px;}
+  .tags span{font-size:12px;color:var(--grey);border:1px solid var(--line);border-radius:20px;padding:4px 11px;}
+
+  .gal{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  .gal .imgbox{aspect-ratio:1/1;border-radius:10px;}
+
+  /* reels */
+  .reels{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;}
+  .reel{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;}
+  .reel .imgbox{aspect-ratio:9/13;position:relative;}
+  .reel .pf{position:absolute;top:8px;left:8px;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:rgba(14,59,54,.72);color:#fff;padding:3px 7px;border-radius:4px;z-index:2;}
+  .reel .play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2;pointer-events:none;}
+  .reel .play span{width:42px;height:42px;border-radius:50%;background:rgba(232,116,59,.92);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;padding-left:3px;}
+  .reel .cap{padding:10px 11px;font-size:12.5px;font-weight:600;line-height:1.3;flex:1;}
+  .reel a.w{display:block;text-align:center;text-decoration:none;background:var(--ember);color:#fff;font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:9px 0;margin:0 11px 11px;border-radius:7px;}
+
+  /* design feature */
+  .feature{margin-bottom:42px;}
+  .feature:last-child{margin-bottom:0;}
+  .feature .fimg{border-radius:12px;overflow:hidden;border:1px solid var(--line);margin-bottom:16px;background:var(--card);}
+  .feature .fimg img{width:100%;height:auto;}
+  .feature .ftitle{font-family:'Archivo',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.01em;margin-bottom:6px;}
+  .feature .fattr{font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ember);margin-bottom:10px;}
+  .feature p{font-size:15px;color:var(--grey);line-height:1.62;max-width:760px;}
+  .feature p b{color:var(--ink);font-weight:600;}
+  .dgrid{display:grid;grid-template-columns:1fr 1fr;gap:30px;}
+  @media(max-width:760px){.dgrid{grid-template-columns:1fr;}}
+
+  .tools{display:flex;flex-wrap:wrap;gap:10px;}
+  .tool{font-size:13.5px;font-weight:500;border:1px solid var(--line);border-radius:9px;padding:9px 15px;background:var(--card);}
+  .tool.key{border-color:var(--ember);color:var(--ember);font-weight:600;background:#FBEEE6;}
+
+  .contact{background:var(--teal);color:var(--paper);padding:70px 0;}
+  .contact h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:38px;letter-spacing:-.02em;line-height:1.04;margin-bottom:24px;}
+  .contact h2 .o{color:var(--ember);}
+  .clist{border-top:1px solid #2A4640;max-width:620px;}
+  .crow{display:flex;justify-content:space-between;padding:15px 0;border-bottom:1px solid #2A4640;font-size:15px;}
+  .crow .k{color:#A9B5AE;font-size:12px;letter-spacing:.12em;text-transform:uppercase;align-self:center;}
+  .crow .v{color:#fff;}
+  .crow .v a{color:#fff;text-decoration:none;border-bottom:1px solid var(--ember);}
+  .footer{padding:22px 0;text-align:center;font-size:12px;color:var(--grey);letter-spacing:.08em;text-transform:uppercase;}
+
+  .flash{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:12px 22px;border-radius:10px;font-size:13px;box-shadow:0 8px 30px rgba(0,0,0,.25);transition:transform .3s;z-index:1100;}
+  .flash.show{transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:860px){
+    .hero{padding:96px 0 52px;}
+    .hero .grid,.case,.reels,.gal{grid-template-columns:1fr;}
+    .hero .name{font-size:43px;} .case.flip .vis{order:0;}
+    .reels{grid-template-columns:repeat(2,1fr);} .gal{grid-template-columns:repeat(2,1fr);}
+  }
+  @media print{ .toolbar,.flash,.nav{display:none!important;} .pad{height:0;} }
+</style>
+</head>
+<body class="">
+
+<div class="toolbar">
+  <span class="brand">Hejing Yuan</span>
+  <span class="hint" id="hint">Click Edit to change any text. Save keeps your edits in this browser; Download saves a full copy you can upload.</span>
+  <button class="btn-edit" id="toggleEdit">Edit</button>
+  <button class="btn-ghost" id="saveBtn">Save</button>
+  <button class="btn-ghost" id="downloadBtn">Download</button>
+  <button class="btn-ghost" id="resetBtn">Reset</button>
+  <button class="btn-ghost" id="pdfBtn">Export PDF</button>
+</div>
+<div class="pad"></div>
+
+<nav class="nav">
+  <span class="brand">Hejing Yuan<span class="o">.</span></span>
+  <span class="links">
+    <a href="#video">Video</a>
+    <a href="#design">Design</a>
+    <a href="#events">Events</a>
+    <a href="#contact">Contact</a>
+  </span>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <div class="grid">
+      <div>
+        <div class="name" data-edit>Hejing Yuan<span class="o">.</span></div>
+        <div class="role" data-edit>Content · Events · Design</div>
+        <p data-edit>Hi, I'm Hejing. I'm finishing an MSc in Human Geography &amp; Urban Studies at LSE and currently create video and social content for LSE's channels.</p>
+        <p data-edit>Alongside content production, I've worked on public art programmes, exhibitions, university campaigns, and digital content projects, from event coordination and stakeholder engagement to social media storytelling and short-form video production. I'm particularly interested in how content can turn attention into participation.</p>
+        <div class="stats">
+          <div><div class="n" data-edit>10<span class="o">+</span></div><div class="l" data-edit>Short-form videos for LSE</div></div>
+          <div><div class="n" data-edit>40<span class="o">+</span></div><div class="l" data-edit>Public events run</div></div>
+          <div><div class="n" data-edit>10k<span class="o">+</span></div><div class="l" data-edit>Article readers</div></div>
+          <div><div class="n" data-edit>6</div><div class="l" data-edit>Platforms</div></div>
+        </div>
+      </div>
+      <div class="portrait imgbox"><img src="img/portrait.jpg" alt="Hejing Yuan"></div>
+    </div>
+  </div>
+</header>
+
+<!-- VIDEO / SOCIAL -->
+<section class="block" id="video">
+  <div class="wrap">
+    <div class="kick" data-edit>Short-form video · Social</div>
+    <div class="secttl" data-edit>Content for LSE's channels</div>
+    <p class="lede" data-edit>From concept to filming and editing, all on my own, for LSE's official Instagram and TikTok. <b>Tap any cover to watch the real post.</b></p>
+    <div class="reels">
+      <div class="reel"><a href="https://www.instagram.com/reel/DWR5lgRjyjo/" target="_blank" rel="noopener"><div class="imgbox"><span class="pf">Instagram</span><span class="play"><span>▶</span></span><img src="img/r1.jpg" loading="lazy" alt="Campus Student Life"></div></a><div class="cap" data-edit>Campus student life</div><a class="w" href="https://www.instagram.com/reel/DWR5lgRjyjo/" target="_blank" rel="noopener">Watch ▶</a></div>
+      <div class="reel"><a href="https://www.instagram.com/reel/DVQxqL4CUKS/" target="_blank" rel="noopener"><div class="imgbox"><span class="pf">Instagram</span><span class="play"><span>▶</span></span><img src="img/r2.jpg" loading="lazy" alt="LSE is coming to China"></div></a><div class="cap" data-edit>"LSE is coming to China"</div><a class="w" href="https://www.instagram.com/reel/DVQxqL4CUKS/" target="_blank" rel="noopener">Watch ▶</a></div>
+      <div class="reel"><a href="https://www.instagram.com/reel/DU3eZhzDbYU/" target="_blank" rel="noopener"><div class="imgbox"><span class="pf">Instagram</span><span class="play"><span>▶</span></span><img src="img/r3.jpg" loading="lazy" alt="Tourist vlog"></div></a><div class="cap" data-edit>Tourist vlog</div><a class="w" href="https://www.instagram.com/reel/DU3eZhzDbYU/" target="_blank" rel="noopener">Watch ▶</a></div>
+      <div class="reel"><a href="https://www.instagram.com/reel/DVwOJnrjYlr/" target="_blank" rel="noopener"><div class="imgbox"><span class="pf">Instagram</span><span class="play"><span>▶</span></span><img src="img/r4.jpg" loading="lazy" alt="Who's lying?"></div></a><div class="cap" data-edit>"Who's lying?"</div><a class="w" href="https://www.instagram.com/reel/DVwOJnrjYlr/" target="_blank" rel="noopener">Watch ▶</a></div>
+      <div class="reel"><a href="https://www.tiktok.com/@lse/video/7623744156564802838" target="_blank" rel="noopener"><div class="imgbox"><span class="pf">TikTok</span><span class="play"><span>▶</span></span><img src="img/r5.jpg" loading="lazy" alt="Cool girl trend"></div></a><div class="cap" data-edit>Cool girl trend</div><a class="w" href="https://www.tiktok.com/@lse/video/7623744156564802838" target="_blank" rel="noopener">Watch ▶</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- DESIGN -->
+<section class="block" id="design">
+  <div class="wrap">
+    <div class="kick" data-edit>Graphic design · Photoshop</div>
+    <div class="secttl" data-edit>Design for student promotion content</div>
+    <p class="lede" data-edit>I build the bilingual graphics, layouts and promo materials behind events, using Photoshop, Illustrator, InDesign and Canva, producing materials for both print and social media.</p>
+
+    <div class="feature">
+      <div class="fimg"><img src="img/x_banner.jpg" loading="lazy" alt="XJTLU Freshers' Cup campaign materials"></div>
+      <div class="ftitle" data-edit>Design &amp; Events Assistant</div>
+      <div class="fattr" data-edit>XJTLU Sports Centre · 2021-2025</div>
+      <p data-edit>I designed visual materials for a series of university competitions and events, including <b>posters, backdrops, badges and postcards</b>. I also helped manage the university's official social media accounts, creating engaging content.</p>
+      <div class="gal" style="margin-top:22px;">
+        <div class="imgbox" style="aspect-ratio:1/1;border-radius:10px;"><img src="img/x_opening.jpg" loading="lazy" alt="Opening ceremony backdrop"></div>
+        <div class="imgbox" style="aspect-ratio:1/1;border-radius:10px;"><img src="img/x_badges.jpg" loading="lazy" alt="Mascot badges"></div>
+        <div class="imgbox" style="aspect-ratio:1/1;border-radius:10px;"><img src="img/x_stand.jpg" loading="lazy" alt="Roll-up stands"></div>
+        <div class="imgbox" style="aspect-ratio:1/1;border-radius:10px;"><img src="img/x_teams.jpg" loading="lazy" alt="Teams lineup"></div>
+      </div>
+    </div>
+
+    <div class="dgrid">
+      <div class="feature">
+        <div class="fimg"><img src="img/d_guanyinqiao.jpg" loading="lazy" alt="Chongqing Guanyinqiao collage"></div>
+        <div class="ftitle" data-edit>A future collage</div>
+        <div class="fattr" data-edit>Graphic design · Urban China · 2023</div>
+        <p data-edit>A photo-composite visualising a future scenario for Chongqing's Guanyinqiao district, built in Photoshop from dozens of layered sources into one seamless scene. Made for a published urban-research magazine.</p>
+      </div>
+      <div class="feature">
+        <div class="fimg"><img src="img/d_zaocheng.jpg" loading="lazy" alt="City-making concept timeline"></div>
+        <div class="ftitle" data-edit>A century of "city-making"</div>
+        <div class="fattr" data-edit>Information design &amp; layout · 2023</div>
+        <p data-edit>A long-form timeline mapping urban-planning ideas across a century. I led the <b>logic, base layout and overall typesetting</b>, organising a wall of text and image into one readable line.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVENTS -->
+<section class="block" id="events">
+  <div class="wrap">
+    <div class="kick" data-edit>Events · Promotion</div>
+    <div class="secttl" data-edit>Events &amp; Content</div>
+    <p class="lede" data-edit>Running public exhibitions, and making the content that fills them, from large mall activations to neighbourhood exhibitions.</p>
+
+    <div class="case">
+      <div class="vis imgbox"><img src="img/cd_dusk.jpg" loading="lazy" alt="Everyday Sparkles crowd"></div>
+      <div>
+        <div class="projname" data-edit>Everyday Sparkles</div>
+        <div class="projattr" data-edit>Public art · UCCA Lab · Chengdu IFS · 2025</div>
+        <p data-edit>A public-art project featuring five international artists in one of Chengdu's busiest mall plazas. As Project Assistant, I helped <b>deliver the project during the May Day holiday period</b>, when daily footfall exceeded 50,000 visitors, producing cross-platform content and artist interviews.</p>
+        <p data-edit>I also ran the public-programme strand of a government-hosted sculpture festival in Shanghai: scheduling, materials and on-the-ground facilitation, <b>40+ public events and workshops</b>.</p>
+        <div class="res">
+          <div><div class="n" data-edit>40+</div><div class="l" data-edit>Public programmes</div></div>
+          <div><div class="n" data-edit>50k</div><div class="l" data-edit>Daily footfall</div></div>
+        </div>
+        <div class="tags"><span data-edit>Content</span><span data-edit>On-site logistics</span><span data-edit>Vendor liaison</span><span data-edit>Tight deadlines</span></div>
+      </div>
+    </div>
+
+    <div class="gal" style="margin-top:30px;margin-bottom:46px;">
+      <div class="imgbox" style="aspect-ratio:1/1;border-radius:10px;"><img src="img/cd_sculpt.jpg" loading="lazy" alt=""></div>
+      <div class="imgbox" style="aspect-ratio:1/1;border-radius:10px;"><img src="img/cd_crowd.jpg" loading="lazy" alt=""></div>
+      <div class="imgbox" style="aspect-ratio:1/1;border-radius:10px;"><img src="img/cd_open.jpg" loading="lazy" alt=""></div>
+      <div class="imgbox" style="aspect-ratio:1/1;border-radius:10px;"><img src="img/cd_panda.jpg" loading="lazy" alt=""></div>
+    </div>
+
+    <div class="case flip">
+      <div class="vis imgbox"><img src="img/sn_board.jpg" loading="lazy" alt="Somewhere Nowhere exhibition"></div>
+      <div>
+        <div class="projname" data-edit>Somewhere, Nowhere</div>
+        <div class="projattr" data-edit>Outdoor interactive exhibition · Suzhou</div>
+        <p data-edit>An outdoor exhibition in Suzhou about public space. I worked on <b>planning, visual materials and on-site delivery</b>, coordinating 5+ vendors and running the companion article series (<b>8 pieces, 10,000+ readers</b>). 1,000+ people came through.</p>
+        <div class="res">
+          <div><div class="n" data-edit>1,000+</div><div class="l" data-edit>Visitors</div></div>
+          <div><div class="n" data-edit>10k+</div><div class="l" data-edit>Article readers</div></div>
+          <div><div class="n" data-edit>5+</div><div class="l" data-edit>Vendors coordinated</div></div>
+        </div>
+        <div class="tags"><span data-edit>Event graphics</span><span data-edit>Newsletter</span><span data-edit>On-site delivery</span><span data-edit>Stakeholders</span></div>
+      </div>
+    </div>
+
+    <div class="gal" style="margin-top:30px;">
+      <div class="imgbox" style="aspect-ratio:1/1;border-radius:10px;"><img src="img/sn_wall.jpg" loading="lazy" alt=""></div>
+      <div class="imgbox" style="aspect-ratio:1/1;border-radius:10px;"><img src="img/sn_kids.jpg" loading="lazy" alt=""></div>
+      <div class="imgbox" style="aspect-ratio:1/1;border-radius:10px;"><img src="img/sn_gaze.jpg" loading="lazy" alt=""></div>
+      <div class="imgbox" style="aspect-ratio:1/1;border-radius:10px;"><img src="img/sn_board2.jpg" loading="lazy" alt=""></div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS -->
+<section class="block">
+  <div class="wrap">
+    <div class="kick" data-edit>Tools</div>
+    <div class="secttl" style="font-size:26px;margin-bottom:18px;" data-edit>What I work in</div>
+    <div class="tools">
+      <span class="tool key" data-edit>Photoshop</span>
+      <span class="tool key" data-edit>CapCut</span>
+      <span class="tool key" data-edit>Excel</span>
+      <span class="tool" data-edit>Illustrator</span>
+      <span class="tool" data-edit>InDesign</span>
+      <span class="tool" data-edit>PowerPoint</span>
+      <span class="tool" data-edit>Word · Outlook · Teams</span>
+      <span class="tool" data-edit>Canva</span>
+      <span class="tool" data-edit>G-Suite</span>
+    </div>
+    <p class="lede" style="margin-top:22px;margin-bottom:0;" data-edit>Languages: Mandarin (native), English (fluent).</p>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="wrap">
+    <div class="kick" style="color:var(--ember);" data-edit>Get in touch</div>
+    <h2 data-edit>Happy to chat<br>any time<span class="o">.</span></h2>
+    <div class="clist">
+      <div class="crow"><span class="k">Email</span><span class="v"><a href="mailto:yhj23479@gmail.com">yhj23479@gmail.com</a></span></div>
+      <div class="crow"><span class="k">Phone</span><span class="v" data-edit>+44 7344 786790</span></div>
+      <div class="crow"><span class="k">LinkedIn</span><span class="v"><a href="https://www.linkedin.com/in/hejing-yuan" target="_blank" rel="noopener">Hejing Yuan</a></span></div>
+      <div class="crow"><span class="k">Based in</span><span class="v" data-edit>London, UK</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="footer" data-edit>Hejing Yuan — Portfolio</div>
+<div class="flash" id="flash"></div>
+
+<script>
+(function(){
+  var editing=false, body=document.body;
+  var toggle=document.getElementById('toggleEdit');
+  var saveBtn=document.getElementById('saveBtn'), dlBtn=document.getElementById('downloadBtn');
+  var resetBtn=document.getElementById('resetBtn'), pdfBtn=document.getElementById('pdfBtn');
+  var flash=document.getElementById('flash');
+  var KEY='hy_portfolio_v5';
+  var editables=document.querySelectorAll('[data-edit]');
+  editables.forEach(function(el,i){ el.setAttribute('data-id','e'+i); });
+
+  try{
+    var s=JSON.parse(localStorage.getItem(KEY)||'{}');
+    if(s.text) editables.forEach(function(el){ var id=el.getAttribute('data-id'); if(s.text[id]!==undefined) el.innerHTML=s.text[id]; });
+  }catch(e){}
+
+  function setEditing(on){
+    editing=on; body.classList.toggle('editing',on);
+    editables.forEach(function(el){ el.contentEditable=on; });
+    toggle.textContent= on?'Done':'Edit'; toggle.classList.toggle('on',on);
+  }
+  editables.forEach(function(el){
+    el.addEventListener('paste', function(e){
+      e.preventDefault();
+      var text=(e.clipboardData||window.clipboardData).getData('text/plain');
+      document.execCommand('insertText', false, text);
+    });
+  });
+  toggle.addEventListener('click',function(){ setEditing(!editing); });
+  document.addEventListener('click',function(e){ if(editing){ var a=e.target.closest('a'); if(a) e.preventDefault(); } });
+
+  function showFlash(m){ flash.textContent=m; flash.classList.add('show'); setTimeout(function(){ flash.classList.remove('show'); },2200); }
+
+  saveBtn.addEventListener('click',function(){
+    var text={}; editables.forEach(function(el){ text[el.getAttribute('data-id')]=el.innerHTML; });
+    try{ localStorage.setItem(KEY,JSON.stringify({text:text})); showFlash('Saved in this browser ✓'); }
+    catch(e){ showFlash('Could not save — try Download instead'); }
+  });
+
+  function downloadFullHtml(){
+    var wasEditing=editing; if(wasEditing) setEditing(false);
+    var clone=document.documentElement.cloneNode(true);
+    var blob=new Blob(['<!DOCTYPE html>\n'+clone.outerHTML],{type:'text/html'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a'); a.href=url; a.download='Hejing_Yuan_Portfolio.html';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); },1500);
+    if(wasEditing) setEditing(true);
+  }
+  dlBtn.addEventListener('click',function(){ showFlash('Downloading a full copy…'); setTimeout(downloadFullHtml,300); });
+  resetBtn.addEventListener('click',function(){ if(confirm('Reset all text to the original?')){ localStorage.removeItem(KEY); location.reload(); } });
+  pdfBtn.addEventListener('click',function(){ if(editing) setEditing(false); setTimeout(function(){ window.print(); },150); });
+})();
+</script>
+
+</body></html>
